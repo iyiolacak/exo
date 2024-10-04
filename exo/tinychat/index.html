@@ -28,6 +28,17 @@
      <!-- Error Toast -->
     <div x-show="errorMessage" x-transition.opacity x-text="errorMessage" class="toast">
     </div>
+
+    <!-- WebSocket  -->
+    <div>
+      <button id="connectBtn">Connect tbSocket NOOO</button>
+      <button id="sendBtn" disabled>Sednd Message</button>
+      <button id="sendBtn" disabled>Sednd Message</button>
+
+  </div>
+  <div id="status">empty</div>
+  <div id="messages"></div>
+
 <div class="model-selector">
 <select @change="if (cstate) cstate.selectedModel = $event.target.value" x-model="cstate.selectedModel">
 <option selected="" value="llama-3.2-1b">Llama 3.2 1B</option>

@@ -6,6 +6,8 @@ import time
 import traceback
 import uuid
 import sys
+import asyncio
+from aiohttp import web
 from exo.orchestration.standard_node import StandardNode
 from exo.networking.grpc.grpc_server import GRPCServer
 from exo.networking.udp.udp_discovery import UDPDiscovery
@@ -209,3 +211,38 @@ def run():
 
 if __name__ == "__main__":
   run()
+
+###
+
+async def websocket_handler(request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    # Store the WebSocket connection for broadcasting later
+    request.app['websockets'].add(ws)
+
+    try:
+        async for msg in ws:
+            if msg.type == web.WSMsgType.TEXT:
+                data = json.loads(msg.data)
+                # Handle messages from the frontend if needed
+                await ws.send_str("Message received")
+
+            elif msg.type == web.WSMsgType.ERROR:
+                print(f'WebSocket connection closed with exception {ws.exception()}')
+
+    finally:
+        request.app['websockets'].remove(ws)
+
+    return ws
+
+async def broadcast_progress(app, event_data):
+    # Broadcast progress to all connected WebSocket clients
+    for ws in app['websockets']:
+        await ws.send_json(event_data)
+
+app = web.Application()
+app['websockets'] = set()  # Store active WebSocket connections
+app.add_routes([web.get('/ws', websocket_handler)])  # WebSocket route
+
+web.run_app(app, port=8000)

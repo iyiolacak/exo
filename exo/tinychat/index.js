@@ -521,3 +521,60 @@ const BOM = [239, 187, 191];
 function hasBom(buffer) {
   return BOM.every((charCode, index) => buffer.charCodeAt(index) === charCode);
 }
+
+// WebSocket
+        let socket;
+        const connectBtn = document.getElementById('connectBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+
+        // Event listener for the connect button
+        connectBtn.addEventListener('click', () => {
+            // Create a new WebSocket connection to the specified server URL
+            socket = new WebSocket('ws://localhost:8000/ws');
+
+            // When the WebSocket connection is opened
+            socket.onopen = function () {
+                statusDiv.innerText = 'Connected to WebSocket server';
+                // Enable the send button once connected
+                sendBtn.disabled = false;
+            };
+
+            // When a message is received from the server
+            socket.onmessage = function (event) {
+                // Create a new paragraph element to display the received message
+                const message = document.createElement('p');
+                message.innerText = 'Received: ' + event.data;
+                messagesDiv.appendChild(message); // Append the message to the messagesDiv
+            };
+
+            // When there is an error with the WebSocket connection
+            socket.onerror = function (error) {
+                // Display the error message in the status div
+                statusDiv.innerText = 'WebSocket error: ' + error.message;
+            };
+
+            // When the WebSocket connection is closed
+            socket.onclose = function () {
+                statusDiv.innerText = 'WebSocket connection closed';
+                // Disable the send button when disconnected
+                sendBtn.disabled = true;
+            };
+        });
+
+        // Event listener for the send button
+        sendBtn.addEventListener('click', () => {
+            // Check if the WebSocket connection is open
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                // Create a data object to send to the server
+                const data = { message: 'Hello, WebSocket!' };
+                // Send the data as a JSON string
+                socket.send(JSON.stringify(data));
+                
+                // Create a new paragraph element to display the sent message
+                const sentMessage = document.createElement('p');
+                sentMessage.innerText = 'Sent: ' + JSON.stringify(data);
+                messagesDiv.appendChild(sentMessage); // Append the sent message to the messagesDiv
+            }
+        });
